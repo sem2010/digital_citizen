@@ -1,0 +1,194 @@
+/* Chosen Palette: Digital Playground (Vibrant & Energetic) */
+/* Application Structure Plan:
+    The application is structured as a single-page interactive lesson plan.
+    It utilizes a main navigation bar to switch between key sections: '수업 개요', '차시별 수업', and '디지털 다짐'.
+    '수업 개요' provides a static overview and explanation of the Feynman technique.
+    '차시별 수업' uses a tabbed interface, allowing users to select and view one lesson (차시) at a time. This prevents information overload and facilitates sequential learning/planning. Each lesson includes simulated activity sheet input areas for interactive engagement.
+    '디지털 다짐' presents the 50 pledges with interactive filtering by category (안전, 공존, 책임) and a search bar. A Chart.js donut chart provides a visual summary of the pledge distribution.
+    This structure was chosen to provide logical grouping of content, intuitive navigation for teachers to quickly access relevant sections, and interactive elements to enhance engagement and comprehension of the detailed pledges, which are a core resource.
+*/
+/* Visualization & Content Choices:
+    - 수업 개요 & 파인만 기법: Textual content for information (Goal: Inform). Presented directly via HTML and Tailwind for clarity.
+    - 차시별 수업: Tabbed interface (Goal: Organize, Inform). Vanilla JS for tab switching. Textual content with HTML structure for lesson details and activity prompts. Interactive textareas simulate activity sheets in a playful way (Goal: Engage).
+    - 디지털 다짐: Categorized list with filter buttons and search (Goal: Organize, Explore). Vanilla JS for filtering and dynamic display. A Chart.js Donut Chart visualizes pledge distribution by category (Goal: Inform, Summarize).
+    - Chart.js for data visualization: Chosen for its robust Canvas rendering, responsiveness, and interactivity (tooltips). Used for the donut chart of pledge categories.
+    - NO SVG/Mermaid: Adhered to by using Chart.js (Canvas) and structured HTML/CSS for all visual elements.
+*/
+/* CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. */
+
+/* Digital Playground Palette */
+:root {
+    --playground-bg-light: #F7FAFC; /* Very light background */
+    --playground-card-bg: #FFFFFF; /* White for content cards */
+
+    --playground-accent-blue: #3B82F6; /* Bright Blue */
+    --playground-accent-green: #22C55E; /* Lively Green */
+    --playground-accent-yellow: #F59E0B; /* Cheerful Yellow/Orange */
+    --playground-accent-pink: #EC4899; /* Playful Pink */
+    --playground-accent-purple: #8B5CF6; /* Vibrant Purple */
+
+    --playground-text-dark: #1F2937; /* Dark Grey for main text */
+    --playground-text-medium: #4B5563; /* Medium Grey for secondary text */
+    --playground-border-light: #E5E7EB; /* Light border */
+    --playground-border-medium: #D1D5DB; /* Medium border */
+}
+
+body {
+    background-color: var(--playground-bg-light);
+    color: var(--playground-text-dark);
+    font-family: 'Noto Sans KR', sans-serif; /* Google Fonts for better Korean typography */
+}
+
+/* General styling for cards and shadows */
+header, .bg-white {
+    background-color: var(--playground-card-bg);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* More pronounced shadow */
+    border-radius: 16px; /* Even rounder corners */
+}
+
+/* Navigation items */
+.nav-item {
+    border-bottom: 3px solid transparent;
+    color: var(--playground-text-medium);
+    font-weight: 500;
+    padding-bottom: 8px;
+    transition: all 0.3s ease-in-out;
+    position: relative; /* For active indicator */
+}
+
+.nav-item:hover {
+    color: var(--playground-accent-blue);
+    transform: translateY(-2px); /* Subtle lift effect */
+}
+
+.nav-item.active {
+    color: var(--playground-accent-blue);
+    font-weight: 700;
+}
+.nav-item.active::after { /* Active indicator */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 3px;
+    background-color: var(--playground-accent-blue);
+    border-radius: 2px;
+}
+
+
+/* Tab buttons for lessons */
+.tab-button {
+    background-color: var(--playground-border-light); /* Lighter default tab */
+    color: var(--playground-text-dark);
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow for all tabs */
+}
+
+.tab-button:hover {
+    background-color: var(--playground-accent-blue);
+    color: var(--playground-card-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tab-button.active {
+    background: linear-gradient(45deg, var(--playground-accent-blue), var(--playground-accent-purple)); /* Gradient for active tab */
+    color: var(--playground-card-bg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Filter buttons for pledges */
+.btn-filter {
+    background-color: var(--playground-border-light);
+    color: var(--playground-text-dark);
+    border-radius: 9999px; /* Full pill shape */
+    padding: 8px 18px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease-in-out;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.btn-filter:hover {
+    background-color: var(--playground-accent-green);
+    color: var(--playground-card-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.btn-filter.active {
+    background: linear-gradient(45deg, var(--playground-accent-green), var(--playground-accent-yellow)); /* Gradient for active filter */
+    color: var(--playground-card-bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+}
+
+/* Activity sheet simulation boxes */
+.activity-box {
+    background-color: var(--playground-bg-light); /* Light background for activity box */
+    border: 2px dashed var(--playground-accent-pink); /* Playful dashed border */
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05); /* Inner shadow for depth */
+}
+
+/* Input fields */
+input[type="text"],
+textarea {
+    border: 2px solid var(--playground-border-medium);
+    border-radius: 8px;
+    padding: 12px;
+    background-color: var(--playground-card-bg);
+    transition: all 0.3s ease-in-out;
+    font-size: 1rem;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--playground-accent-pink);
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2); /* Brighter focus ring */
+}
+
+/* Specific list styles */
+ul.list-disc li::before,
+ul.list-circle li::before {
+    color: var(--playground-accent-pink); /* List bullets in pink */
+    font-size: 1.2em; /* Slightly larger bullets */
+}
+ol.list-decimal li::marker {
+    color: var(--playground-accent-blue); /* Ordered list numbers in blue */
+    font-weight: bold;
+}
+
+/* Border adjustments */
+.border-b-2 { border-bottom-color: var(--playground-border-light); }
+.border-gray-200 { border-color: var(--playground-border-light); }
+.border-gray-300 { border-color: var(--playground-border-medium); }
+.border-l-4 {
+    border-left-color: var(--playground-accent-yellow); /* Left border in yellow */
+    border-radius: 6px;
+}
+
+/* Text color adjustments for better contrast with new palette */
+.text-gray-800 { color: var(--playground-text-dark); }
+.text-gray-700 { color: var(--playground-text-dark); }
+.text-gray-600 { color: var(--playground-text-medium); }
+
+/* Chart container specific styling */
+.chart-container {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: var(--playground-card-bg);
+    padding: 1rem; /* Add some padding inside the chart container */
+}
